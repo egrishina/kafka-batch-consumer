@@ -4,10 +4,10 @@ namespace Route256.KafkaProducer;
 
 public class Producer
 {
-    public const string KafkaHost = "localhost:9092";
-    public const string Topic = "temperature";
+    private const string KafkaHost = "localhost:9092";
+    private const string Topic = "temperature";
 
-    public async Task StartProducer()
+    public async Task StartProducing()
     {
         var producerConfig = new ProducerConfig
         {

@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Route256.KafkaConsumer", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Route256.KafkaProducer", "src\Route256.KafkaProducer\Route256.KafkaProducer.csproj", "{C0A0D8AC-8E44-43BB-BE5C-12E515D0C781}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Route256.Redis", "src\Route256.Redis\Route256.Redis.csproj", "{31853C4F-8515-4821-BCC1-DB80017EEA26}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -14,6 +16,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{A545912C-AB6B-4BF0-8BDB-14861F72ABB2} = {8B4CDB64-3605-4523-ACDA-5C6C5530E8B6}
 		{C0A0D8AC-8E44-43BB-BE5C-12E515D0C781} = {8B4CDB64-3605-4523-ACDA-5C6C5530E8B6}
+		{31853C4F-8515-4821-BCC1-DB80017EEA26} = {8B4CDB64-3605-4523-ACDA-5C6C5530E8B6}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{A545912C-AB6B-4BF0-8BDB-14861F72ABB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -24,5 +27,9 @@ Global
 		{C0A0D8AC-8E44-43BB-BE5C-12E515D0C781}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C0A0D8AC-8E44-43BB-BE5C-12E515D0C781}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C0A0D8AC-8E44-43BB-BE5C-12E515D0C781}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31853C4F-8515-4821-BCC1-DB80017EEA26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31853C4F-8515-4821-BCC1-DB80017EEA26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31853C4F-8515-4821-BCC1-DB80017EEA26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31853C4F-8515-4821-BCC1-DB80017EEA26}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
