@@ -1,4 +1,5 @@
 ﻿using Confluent.Kafka;
+using Microsoft.Extensions.Logging;
 using Route256.Redis;
 
 namespace Route256.KafkaConsumer;
@@ -10,12 +11,15 @@ public class Consumer
     private const string ConsumerGroupId = "group_1";
     private const int BatchSize = 10;
 
+    private readonly ILogger<Consumer> _logger;
     private readonly RedisCache _redis;
     private readonly List<Action<IConsumer<string, string>, Error>> _errorsHandlers = new();
 
-    public Consumer()
+    public Consumer(ILogger<Consumer> logger)
     {
         RegisterLogErrorHandler();
+
+        _logger = logger;
         _redis = new RedisCache();
     }
 
@@ -40,7 +44,7 @@ public class Consumer
 
         await ConsumeMessages(consumerConfig, cts.Token);
     }
-    
+
     private async Task ConsumeMessages(ConsumerConfig config, CancellationToken ct)
     {
         using var consumer = new ConsumerBuilder<string, string>(config)
@@ -60,7 +64,7 @@ public class Consumer
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Consumer Error: {e.Message}");
+                _logger.LogError("Consumer Error: {@Message}", e.Message);
             }
             finally
             {
@@ -85,9 +89,10 @@ public class Consumer
                 return;
             }
 
-            Console.WriteLine(
-                $"{message.Topic}:{message.Partition}:{message.Offset} => Consumed event with " +
-                $"key = {message.Message.Key,-20} value = {message.Message.Value}");
+            _logger.LogInformation(
+                "{@Topic}:{@Partition}:{@Offset} => Consumed event with key = {@Key} value = {@Value}",
+                message.Topic, message.Partition, message.Offset, message.Message.Key, message.Message.Value);
+
             messageBatch.Add(message);
             latestPartition = message.Partition.Value;
         }
@@ -98,7 +103,7 @@ public class Consumer
         }
         else
         {
-            Console.WriteLine("- - - - - Waiting for new messages - - - - -");
+            _logger.LogDebug("- - - - - Waiting for new messages - - - - -");
         }
     }
 
@@ -113,7 +118,7 @@ public class Consumer
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Unexpected error occured during processing: {e.Message}");
+            _logger.LogError("Unexpected error occured during processing: {@Message}", e.Message);
             var topicPartition = messageBatch.Last().TopicPartition;
             var offset = RestoreLastOffset(topicPartition);
             consumer.Seek(new TopicPartitionOffset(topicPartition, new Offset(offset)));
@@ -122,14 +127,13 @@ public class Consumer
 
     private void ProcessMessages<TKey, TValue>(IReadOnlyCollection<Message<TKey, TValue>> messages)
     {
-        Console.WriteLine("- - - - - Processing batch messages - - - - -");
+        _logger.LogDebug("- - - - - Processing batch messages - - - - -");
     }
 
     private void StoreCurrentOffset(TopicPartitionOffset tpo)
     {
         _redis.StoreValue($"{tpo.Topic}:{tpo.Partition.Value}", tpo.Offset.Value.ToString());
-        Console.WriteLine(
-            $"Stored offset {tpo.Offset.Value} for topic = {tpo.Topic} partition = {tpo.Partition.Value}");
+        _logger.LogInformation("Stored offset {@Offset} for topic = {@Topic} partition = {@Partition}", tpo.Offset.Value, tpo.Topic, tpo.Partition.Value);
     }
 
     private long RestoreLastOffset(TopicPartition tp)
@@ -137,12 +141,12 @@ public class Consumer
         var offsetString = _redis.RetrieveValue($"{tp.Topic}:{tp.Partition.Value}");
         if (long.TryParse(offsetString, out var offset))
         {
-            Console.WriteLine($"Restored offset {offset} for topic = {tp.Topic} partition = {tp.Partition.Value}");
+            _logger.LogInformation("Restored offset {@Offset} for topic = {@Topic} partition = {@Partition}", offset, tp.Topic, tp.Partition.Value);
             return offset;
         }
         else
         {
-            Console.WriteLine($"No offset for topic = {tp.Topic} partition = {tp.Partition.Value}");
+            _logger.LogInformation("No offset for topic = {@Topic} partition = {@Partition}", tp.Topic, tp.Partition.Value);
             return 0;
         }
     }
@@ -153,11 +157,11 @@ public class Consumer
         {
             if (error.IsFatal)
             {
-                Console.WriteLine($"Kafka Consumer Internal Error: Code {error.Code}, Reason {error.Reason}");
+                _logger.LogError("Kafka Consumer Internal Error: Code {@Code}, Reason {@Reason}", error.Code, error.Reason);
             }
             else
             {
-                Console.WriteLine($"Kafka Consumer Internal Warning: Code {error.Code}, Reason {error.Reason}");
+                _logger.LogWarning("Kafka Consumer Internal Warning: Code {@Code}, Reason {@Reason}", error.Code, error.Reason);
             }
         });
     }
